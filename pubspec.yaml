@@ -1,0 +1,214 @@
+name: abacus_app
+description: A new Flutter project.
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.3 <3.0.0"
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+
+  table_calendar: ^3.0.8
+  syncfusion_flutter_calendar: ^20.3.59
+  syncfusion_flutter_pdfviewer: ^20.3.59
+  razorpay_flutter: ^1.1.1
+  qr_flutter: ^4.0.0
+  flutter_countdown_timer: ^4.1.0
+
+
+  shared_preferences: ^2.0.15
+  cupertino_icons: ^1.0.2
+  percent_indicator: ^4.0.1
+  flutter_inappwebview: ^5.3.2
+  fluttertoast: ^8.0.9
+  image_picker: ^0.8.4+4
+  flutter_rating_bar: ^4.0.1
+  url_launcher: ^6.1.5
+  webview_flutter: ^3.0.0
+  touchable: ^1.0.2
+  http: ^0.13.4
+  intl: ^0.17.0
+
+
+  smooth_page_indicator: ^1.0.0+2
+
+
+
+dev_dependencies:
+#  webview_flutter: ^3.0.0
+
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^2.0.0
+
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+     - assets/index.html
+     - images/bg_splash.png
+     - images/logo.png
+     - images/background.png
+     - images/email_icon.png
+     - images/pass_icon.png
+     - images/login_image.png
+     - images/back.png
+     - images/forgot_pass.png
+     - images/institute_icon.png
+     - images/dob_icon.png
+     - images/call_icon.png
+     - images/learning_icon.png
+     - images/name_icon.png
+     - images/std_icon.png
+     - images/address_icon.png
+     - images/bg_navdrawer.png
+     - images/menu_home.png
+     - images/menu_logout.png
+     - images/menu_contact.png
+     - images/menu_account.png
+     - images/menu_session.png
+     - images/menu_about.png
+     - images/menu_visit.png
+     - images/menu_abacus.png
+     - images/menu_comp.png
+     - images/menu_classes.png
+     - images/menu_game.png
+     - images/menu_bg.png
+     - images/menu_icon.png
+     - images/home_bg.png
+     - images/home1.png
+     - images/card_bg.png
+     - images/home_game.png
+     - images/contact_img.png
+     - images/user_image.png
+     - images/account_edit.png
+     - images/filter_icon.png
+     - images/bg_green.png
+     - images/bg_orange.png
+     - images/yellow_banner.png
+     - images/game_image.png
+     - images/untick_level.png
+     - images/tick_level.png
+     - images/selected_level_img.png
+     - images/session_image.png
+     - images/live_icon.png
+     - images/clock_icon.png
+     - images/reset_icon.png
+     - images/answer_icon.png
+     - images/hint_icon.png
+     - images/win_trophy.png
+     - images/trophy_img.png
+     - images/Competition_img.png
+     - images/live_session.png
+     - images/upload_content.png
+     - images/camera_icon.png
+     - images/gallery_icon.png
+     - images/camera_icon.png
+     - images/courses_img.png
+     - images/profile_icon.png
+     - images/right_arrow.png
+     - images/stud_bg_navdrawer.png
+     - images/logo_white.png
+     - images/rule_image.png
+     - images/rule_image1.png
+     - images/competitive_icon.png
+     - images/schedule_icon.png
+     - images/virtual_icon.png
+     - images/calendar_icon.png
+     - images/application_icon.png
+     - images/forward_icon.png
+     - images/session_icon.png
+     - images/level_icon.png
+     - images/info_icon.png
+     - images/contact_icon.png
+     - images/compensation_classes_icon.png
+     - images/mail_icon.png
+     - images/hours_icon.png
+     - images/location_icon.png
+     - images/about_abacus_icon.png
+     - images/editpen_icon.png
+     - images/commpensation_class_icon.png
+     - images/student_icon.png
+     - images/teacher_icon.png
+     - images/institution_icon.png
+     - images/image9.png
+     - images/image10.png
+     - images/test_image.png
+     - images/blog_icon.png
+     - images/compensation_image.png
+     - images/heart_image.png
+     - images/attendance_icon.png
+     - images/paper_icon.png
+     - images/play_icon.png
+     - images/course_description_icon.png
+     - images/mode_icon.png
+     - images/title_icon.png
+     - images/expired_icon.png
+     - images/money_icon.png
+     - images/compensation_video_img.png
+     - images/hundred2.png
+     - images/hundred1.png
+     - images/ten2.png
+     - images/ten1.png
+     - images/assign_img.png
+     - images/leave_icon.png
+
+
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: fonts/Montserrat-Regular.ttf
+        - asset: fonts/Montserrat-Medium.ttf
+        - asset: fonts/Montserrat-SemiBold.ttf
+        - asset: fonts/Montserrat-Bold.ttf
+
+    - family: Calistoga
+      fonts:
+        - asset: fonts/Calistoga-Regular.ttf
+
+
+
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages
