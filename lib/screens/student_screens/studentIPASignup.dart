@@ -48,6 +48,9 @@ class _studentIPASignup extends State<studentIPASignup> {
   List<ModeModel> learningModesList = [];
   var currentSelectedLearningValue;
 
+  String? studentType = "online";
+
+
   @override
   void initState() {
     super.initState();
@@ -331,6 +334,63 @@ class _studentIPASignup extends State<studentIPASignup> {
                     ),
                   ),
 
+                  /*      Student Type     */
+                  Container(
+                    alignment : Alignment.centerLeft,
+                    margin: const EdgeInsets.only(top: 15,),
+                    child: const Text("Student Type", style: TextStyle(
+                        decoration: TextDecoration.none,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: "Montserrat",
+                        color: Colors.black)),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+                    child: Material(
+                      elevation: 1.0,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6.0),
+                          side: const BorderSide(color: Colors.white)),
+                      child: Row(
+                          children: [
+
+                            Flexible(
+                              flex: 1,
+                              fit: FlexFit.tight,
+                              child: RadioListTile(
+                                title: const Text("Online Student"),
+                                value: "online",
+                                groupValue: studentType,
+                                onChanged: (value){
+                                  setState(() {
+                                    studentType = value.toString();
+                                  });
+                                },
+                              ),
+                            ),
+                            Flexible(
+                              flex: 1,
+                              fit: FlexFit.tight,
+                              child: RadioListTile(
+                                title: const Text("Offline Student"),
+                                value: "offline",
+                                groupValue: studentType,
+                                onChanged: (value){
+                                  setState(() {
+                                    studentType = value.toString();
+                                  });
+                                },
+                              ),
+
+                            ),
+
+                          ]),
+                    ),
+                  ),
+
 
                   /*     Create Button     */
                   Container(
@@ -576,6 +636,7 @@ class _studentIPASignup extends State<studentIPASignup> {
             'mode' : currentSelectedLearningValue,
             'device_token' : 'Hello',
             'device_type' : defaultTargetPlatform == TargetPlatform.android ? '0': '1',
+            'studentType' : studentType,
 
           }
       );

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 class AssessmentCellWidget extends StatelessWidget {
+  final String id;
   final String title;
-  final String image;
-  final String author;
-  final String date;
+  final String level;
+  final String pdf;
   final VoidCallback onClick;
   AssessmentCellWidget(
-      {required this.title,
-      required this.image,
-      required this.author,
-      required this.date,
+      {required this.id,
+      required this.title,
+      required this.level,
+      required this.pdf,
       required this.onClick});
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,7 @@ class AssessmentCellWidget extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.asset(
-                        image,
+                        "images/paper_icon.png",
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -60,19 +60,13 @@ class AssessmentCellWidget extends StatelessWidget {
                           height: 5,
                         ),
                         Text(
-                          author,
+                          level,
                           style: const TextStyle(
                             fontSize: 12,
                           ),
                         ),
                         const SizedBox(
                           height: 5,
-                        ),
-                        Text(
-                          date,
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
                         ),
 
                       ],

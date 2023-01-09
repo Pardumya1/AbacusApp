@@ -646,6 +646,7 @@ class _LoginStudentState extends State<LoginStudent> with SingleTickerProviderSt
           addStringToSF(ApiConstants.studentPhoneNumber, data["phone_number"].toString());
           addStringToSF(ApiConstants.studentDeviceToken, data["device_token"].toString());
           addStringToSF(ApiConstants.studentDeviceType, data["device_type"].toString());
+          addStringToSF(ApiConstants.studentTerm, data["level"].toString());
           addStringToSF(ApiConstants.studentID, data["id"].toString());
           addStringToSF(ApiConstants.loginType, "0");
           addStringToSF(ApiConstants.studentLoginType, "0");

@@ -286,20 +286,21 @@ class _FranchiseHomeScreen extends State<FranchiseHomeScreen>
     print("Click$value");
 
     webViewController.goBack();
+    return Future.value(true);
 
-    if (await webViewController.canGoBack()) {
-      print("Click IN");
-      print("onwill goback");
-      webViewController.goBack();
-      return Future.value(true);
-    } else {
-      print("Click OUT");
-      print("No back history item");
-      // Scaffold.of(context).showSnackBar(
-      //   const SnackBar(content: Text("No back history item")),
-      // );
-      return Future.value(false);
-    }
+    // if (await webViewController.canGoBack()) {
+    //   print("Click IN");
+    //   print("onwill goback");
+    //   webViewController.goBack();
+    //   return Future.value(true);
+    // } else {
+    //   print("Click OUT");
+    //   print("No back history item");
+    //   // Scaffold.of(context).showSnackBar(
+    //   //   const SnackBar(content: Text("No back history item")),
+    //   // );
+    //   return Future.value(false);
+    // }
   }
 
 }

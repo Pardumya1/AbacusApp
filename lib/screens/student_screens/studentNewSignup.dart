@@ -1011,6 +1011,7 @@ class _Signup extends State<Signup> {
           addStringToSF(ApiConstants.studentDOB, data["date_of_birth"].toString());
           addStringToSF(ApiConstants.studentAddress, data["address"].toString());
           addStringToSF(ApiConstants.studentMode, data["mode"].toString());
+          addStringToSF(ApiConstants.studentTerm, data["level"].toString());
           addStringToSF(ApiConstants.studentPhoneNumber, data["phone_number"].toString());
           addStringToSF(ApiConstants.studentDeviceToken, data["device_token"].toString());
           addStringToSF(ApiConstants.studentDeviceType, data["device_type"].toString());

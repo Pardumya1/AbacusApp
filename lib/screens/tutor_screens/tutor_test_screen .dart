@@ -1,5 +1,3 @@
-
-import 'package:abacus_app/screens/student_screens/quiz/screens/quizz_screen.dart';
 import 'package:abacus_app/screens/student_screens/wigets/test_cell_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -113,7 +111,7 @@ class _TutorTestScreen extends State<TutorTestScreen> {
 
                 bottom: const TabBar(
                   tabs: [
-                    Tab(text: "Ongoing Test"),
+                    Tab(text: "Student Test Uploaded"),
                     Tab(text: "Upcoming Test"),
                     Tab(text: "Test Results"),
                   ],

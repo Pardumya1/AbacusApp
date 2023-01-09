@@ -1,19 +1,16 @@
 
+import 'dart:convert';
+
 import 'package:abacus_app/screens/student_screens/wigets/assessment_cell_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../utils/constants.dart';
 import '../marge_screens/PDFScreen.dart';
-
-
-class Post {
-  final String title;
-  final String image;
-  final String author;
-  final String date;
-
-  Post({required this.title, required this.image, required this.author, required this.date});
-}
+import 'model/assessmentPaperListModel.dart';
 
 
 class AssessmentPaperScreen extends StatefulWidget {
@@ -28,6 +25,8 @@ class AssessmentPaperScreen extends StatefulWidget {
 
 class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
 
+  List<assessmentPaperListModel> paperList = [];
+
   @override
   void initState() {
     super.initState();
@@ -35,7 +34,6 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
 
   @override
   void dispose() {
-
     SystemChrome.setSystemUIOverlayStyle(
         const SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
@@ -47,15 +45,6 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
     super.dispose();
   }
 
-
-  final data = [
-    Post(
-      image: "images/paper_icon.png",
-      title: 'Assessment Paper',
-      author: 'Regular Level 2',
-      date: '25 Mar 2020',
-    ),
-  ];
 
 
   @override
@@ -73,7 +62,7 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
       children: <Widget>[
 
         Image.asset(
-          "images/background.png",
+          "images/home_bg.png",
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           fit: BoxFit.fill,
@@ -148,28 +137,38 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
 
   }
 
+
+  /*      show Content    */
   showContent() {
+
     return SafeArea(
+        child: FutureBuilder(
+            future: getDataFunction(),
+            builder: (context, snapshot){
 
-      child: Container(
+              if(snapshot.connectionState == ConnectionState.done){
+                return Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F0F0),
+                    border: Border.all(
+                      color: const Color(0xBBFAFAFA),
+                    ),
+                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
 
-        margin: const EdgeInsets.only(top: 10),
-        decoration: BoxDecoration(
-          color: Color(0xFFF1F0F0),
-          border: Border.all(
-            color: Color(0xBBFAFAFA),
-          ),
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                  ),
+                  child:TabBarView(
+                    children: [
+                      listViewSection(),
+                      listViewSection(),
+                    ],
+                  ),
+                );
+              }else{
+                return const Center(child: CircularProgressIndicator());
+              }
 
-        ),
-        child:TabBarView(
-          children: [
-            listViewSection(),
-            listViewSection(),
-          ],
-        ),
-      ),
-
+            })
     );
 
   }
@@ -179,28 +178,77 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
       margin: const EdgeInsets.only(top: 20),
       child: ListView.separated(
         shrinkWrap: true,
-        itemCount: data.length,
+        itemCount: paperList.length,
         itemBuilder: (context, index) {
-          final post = data[index];
+          final post = paperList[index];
           return AssessmentCellWidget(
-              title: post.title,
-              image: post.image,
-              author: post.author,
-              date: post.date,
+              id: post.id,
+              title: post.AssPaperName,
+              level: post.Level,
+              pdf: post.UploadPDF,
               onClick: () {
 
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => PDFScreen(),
+                    builder: (_) => const PDFScreen(),
                   ),
                 );
 
 
               });
         },
-        separatorBuilder: (context, index) => Divider(),
+        separatorBuilder: (context, index) => const Divider(),
       ),
     );
+  }
+
+
+  /*   get Assessment Details APIs     */
+  Future<void> getDataFunction() async {
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try{
+      final response = await post(
+          Uri.parse(ApiConstants.baseUrl + ApiConstants.levelAssessmentPaperEndpoint),
+          headers: {
+            'Authorization': 'Bearer ${prefs.getString(ApiConstants.accessTokenSP)}',
+          },
+          body: {
+            'student_id' : prefs.getString(ApiConstants.studentID),
+            'student_type' : prefs.getString(ApiConstants.studentLoginType),
+            'level_code' : 'EL-02',
+          }
+      );
+
+      Map<String, dynamic> data = json.decode(response.body);
+
+      if (data['status'] == "true") {
+
+        var paperListArray = data['data'] as List;
+        paperList.clear();
+
+
+        /*   levelList   */
+        for (var i = 0; i < paperListArray.length; i++) {
+          var paperDataObj = paperListArray[i];
+
+          paperList.add(assessmentPaperListModel(paperDataObj["id"].toString(), paperDataObj["AssPaperName"].toString(),
+              paperDataObj["Level"].toString(), paperDataObj["Status"].toString(),  paperDataObj["UploadPDF"].toString(),));
+
+        }
+      }
+      else {
+        Fluttertoast.showToast(
+          msg: data['message'],
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+      }
+
+    }catch(e){
+      print("Error : $e");
+    }
   }
 
 }

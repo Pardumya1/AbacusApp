@@ -1,8 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../utils/constants.dart';
 import 'assessment_paper_screen .dart';
+import 'model/levelListModel.dart';
 
 class LevelScreen extends StatefulWidget {
   static const String routeName = '/LevelScreen';
@@ -19,8 +24,9 @@ class _LevelScreen extends State<LevelScreen> {
   @override
   void initState() {
     super.initState();
-
   }
+
+  List<levelListModel> levelList = [];
 
   @override
   void dispose() {
@@ -35,106 +41,6 @@ class _LevelScreen extends State<LevelScreen> {
 
     super.dispose();
   }
-
-  List<dynamic> levels = json.decode("""
-[
-    {
-        "id": 1,
-        "name": "Elementary Level 1",
-        "status": "1"
-    },
-    {
-        "id": 2,
-        "name": "Elementary Level 2",
-        "status": "0"
-    },
-    {
-        "id": 3,
-        "name": "Elementary Level 3",
-        "status": "0"
-    },
-    {
-        "id": 4,
-        "name": "Elementary Level 4",
-        "status": "0"
-    },
-    {
-        "id": 5,
-        "name": "Elementary Level 5",
-        "status": "0"
-    },
-    {
-        "id": 6,
-        "name": "Elementary Level 6",
-        "status": "0"
-    },
-    {
-        "id": 7,
-        "name": "Regular Level 1",
-        "status": "0"
-    },
-    {
-        "id": 8,
-        "name": "Regular Level 2",
-        "status": "0"
-    },
-    {
-        "id": 9,
-        "name": "Regular Level 3",
-        "status": "0"
-    },
-    {
-        "id": 10,
-        "name": "Regular Level 4",
-        "status": "0"
-    },
-    {
-        "id": 11,
-        "name": "Regular Level 5",
-        "status": "0"
-    },
-    {
-        "id": 12,
-        "name": "Regular Level 6",
-        "status": "0"
-    },
-    {
-        "id": 13,
-        "name": "Advanced Level 1",
-        "status": "0"
-    },
-    {
-        "id": 14,
-        "name": "Advanced Level 2",
-        "status": "0"
-    },
-    {
-        "id": 15,
-        "name": "Advanced Level 3",
-        "status": "0"
-    },
-    {
-        "id": 16,
-        "name": "Advanced Level 4",
-        "status": "0"
-    },
-    {
-        "id": 17,
-        "name": "Grand master Level 1",
-        "status": "0"
-    },
-    {
-        "id": 18,
-        "name": "Grand master Level 2",
-        "status": "0"
-    },
-    {
-        "id": 19,
-        "name": "Grand master Level 3",
-        "status": "0"
-    }
-]
-    """);
 
   @override
   Widget build(BuildContext context) {
@@ -203,102 +109,168 @@ class _LevelScreen extends State<LevelScreen> {
     );
   }
 
+  /*   show Content  */
   showContent() {
     return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
+        child: FutureBuilder(
+        future: getDataFunction(),
+            builder: (context, snapshot){
 
-          Expanded(
-             child:Container(
-               margin: const EdgeInsets.only(top:20),
-               padding: const EdgeInsets.only(top:10,bottom: 20),
-               decoration: BoxDecoration(
-                   color: Colors.white,
-                   border: Border.all(
-                     color: Colors.white,//Radius.circular(20)
-                   ),
-                   image: const DecorationImage(
-                       image: AssetImage("images/background.png"),
-                       fit: BoxFit.cover
-                   )
-               ),
+          if(snapshot.connectionState == ConnectionState.done) {
+            return Container(
+                margin: const EdgeInsets.only(top:20),
+                padding: const EdgeInsets.only(top:10,bottom: 20),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(
+                      color: Colors.white,//Radius.circular(20)
+                    ),
+                    image: const DecorationImage(
+                        image: AssetImage("images/background.png"),
+                        fit: BoxFit.cover
+                    )
+                ),
 
-                 child: GridView.builder(
-                     padding: const EdgeInsets.only(top: 10, left: 10, right: 10, bottom: 10),
-                     scrollDirection: Axis.vertical,
-                     shrinkWrap: true,
-                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                         crossAxisCount: 2,
-                         crossAxisSpacing: 20,
-                         mainAxisSpacing: 20,
-                         childAspectRatio: 6/2
-                     ),
-                     itemCount: levels.length,
-                     itemBuilder: (BuildContext ctx, index) {
-                       return GestureDetector(
-                         onTap: () {
-                           setState(() {
+                child: GridView.builder(
+                    padding: const EdgeInsets.only(top: 10, left: 10, right: 10, bottom: 10),
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 20,
+                        mainAxisSpacing: 20,
+                        childAspectRatio: 6/2
+                    ),
+                    itemCount: levelList.length,
+                    itemBuilder: (BuildContext ctx, index) {
 
-                             if(levels[index]["status"] == "1"){
-                               Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => const AssessmentPaperScreen()));
-                             }
+                      var backgroundColor = 0;
+                      var textColor = 0;
+                      var untickLevel = 0;
 
-                           });
-                         },
-                         child: Container(
+                      if(levelList[index].levelStatus == "1"){
+                        backgroundColor = 0xfff0f3ff;
+                        textColor = 0xff006e3c;
+                        untickLevel = 0xFFD2D0D0;
+                      }else if(levelList[index].levelStatus == "2"){
+                        textColor = 0xfff0f3ff;
+                        backgroundColor = 0xffeca214;
+                        untickLevel = 0xfff0f3ff;
+                      }else{
+                        backgroundColor = 0xff006e3c;
+                        textColor = 0xfff0f3ff;
+                        untickLevel = 0xfff0f3ff;
+                      }
 
-                             padding: const EdgeInsets.only(left: 10, right: 10),
-                             decoration: BoxDecoration(
-                                 color: levels[index]["status"] == "1" ? const Color(
-                                     0xff006e3c) : Colors.white,
-                                 border: Border.all(color: const Color(0xFFEEEEE9), // Set border color
-                                     width: 1.0),
-                                 borderRadius: BorderRadius.circular(5)
-                             ),
+                      return GestureDetector(
+                        onTap: () {
 
-                             child: Row(
-                               mainAxisAlignment: MainAxisAlignment.start,
-                               children:[
-                                 Image.asset(
-                                   'images/untick_level.png',
-                                   width: 24,
-                                   height: 24,
-                                   color: levels[index]["status"] == "1" ? Colors.white : null,
-                                   fit: BoxFit.fill,
-                                 ),
+                          if(levelList[index].levelStatus == "2"){
+                            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => const AssessmentPaperScreen()));
+                          }
 
-                                 const SizedBox(width: 10),
+                        },
+                        child: Container(
 
-                                 Flexible(child: Text(
-                                     levels[index]["name"],
-                                     style: TextStyle(
-                                         decoration: TextDecoration.none,
-                                         fontSize: 16,
-                                         fontWeight: FontWeight.w500,
-                                         fontFamily: "Montserrat",
-                                         color: levels[index]["status"] == "1" ? Colors.white : const Color(
-                                             0xff006e3c)
-                                     )
-                                 ))
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            decoration: BoxDecoration(
+                                color: Color(backgroundColor),
+                                border: Border.all(color: Color(untickLevel), // Set border color
+                                    width: 1.0),
+                                borderRadius: BorderRadius.circular(5)
+                            ),
 
-                               ]
-                             )
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children:[
+                                  Image.asset(
+                                    'images/untick_level.png',
+                                    width: 24,
+                                    height: 24,
+                                    color: Color(untickLevel),
+                                    fit: BoxFit.fill,
+                                  ),
 
-                         ),
-                       );
-                     }
-                 )
+                                  const SizedBox(width: 10),
 
-             )
+                                  Flexible(child: Text(
+                                      levelList[index].LevelName,
+                                      style: TextStyle(
+                                          decoration: TextDecoration.none,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: "Montserrat",
+                                          color: Color(textColor)
+                                      )
+                                  ))
 
-          )
+                                ]
+                            )
 
-        ],
-      ),
+                        ),
+                      );
+                    }
+                )
+
+            );
+          }else{
+            return const Center(child: CircularProgressIndicator());
+          }
+
+        })
     );
-
   }
+
+
+  /*   get Level Details APIs     */
+  Future<void> getDataFunction() async {
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try{
+      final response = await post(
+          Uri.parse(ApiConstants.baseUrl + ApiConstants.studentLevelListEndpoint),
+          headers: {
+            'Authorization': 'Bearer ${prefs.getString(ApiConstants.accessTokenSP)}',
+          },
+          body: {
+            'student_id' : prefs.getString(ApiConstants.studentID),
+            'student_type' : prefs.getString(ApiConstants.studentLoginType),
+            'level_code' : prefs.getString(ApiConstants.studentTerm),
+          }
+      );
+
+      Map<String, dynamic> data = json.decode(response.body);
+
+      if (data['status'] == "true") {
+
+        var levelListArray = data['data'] as List;
+        levelList.clear();
+
+
+        /*   levelList   */
+        for (var i = 0; i < levelListArray.length; i++) {
+          var levelDataObj = levelListArray[i];
+
+          levelList.add(levelListModel(levelDataObj["id"].toString(), levelDataObj["LevelGUID"].toString(),
+              levelDataObj["LevelCode"].toString(), levelDataObj["LevelName"].toString(),  levelDataObj["StreamName"].toString(),
+              levelDataObj["SortOrder"].toString(),levelDataObj["levelStatus"].toString() ));
+
+        }
+      }
+      else {
+        Fluttertoast.showToast(
+          msg: data['message'],
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+      }
+
+    }catch(e){
+      print("Error : $e");
+    }
+  }
+
 
 }
 
