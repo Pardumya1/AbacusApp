@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../utils/constants.dart';
 import 'PlayGamesListScreen.dart';
 
 class SelectedLevel extends StatefulWidget {
@@ -16,7 +21,7 @@ class SelectedLevel extends StatefulWidget {
 }
 
 class _SelectedLevel extends State<SelectedLevel> {
-
+  final List<DialogModel> dialogList = <DialogModel>[];
   final _controller = PageController();
   static const _kDuration = Duration(milliseconds: 300);
   static const _kCurve = Curves.ease;
@@ -43,6 +48,8 @@ class _SelectedLevel extends State<SelectedLevel> {
 
   @override
   Widget build(BuildContext context) {
+
+    getRulesData();
 
     SystemChrome.setSystemUIOverlayStyle(
         const SystemUiOverlayStyle(
@@ -186,7 +193,7 @@ class _SelectedLevel extends State<SelectedLevel> {
       child: ElevatedButton(
 
           style: ElevatedButton.styleFrom(
-              backgroundColor : const Color(0xFF063464),
+            //  32 backgroundColor : const Color(0xFF063464),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6.0),
                   side: const BorderSide(color: Color(0xFF063464))),
@@ -241,9 +248,9 @@ class _SelectedLevel extends State<SelectedLevel> {
                                       children: <Widget>[
 
                                         Padding(
-                                          padding: const EdgeInsets.only(left: 20.0, right: 20, bottom: 20, top: 10),
+                                          padding: const EdgeInsets.only(bottom: 20, top: 10),
                                           child: Text(
-                                            dialogList[index].title,
+                                            dialogList[index].description,
                                             style: const TextStyle(
                                                 fontSize: 14,
                                                 color: Color(0xFF063464),
@@ -258,15 +265,14 @@ class _SelectedLevel extends State<SelectedLevel> {
                                             child: Row(
                                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                 children:[
-
-                                                  Image.asset(
+                                                  Image.network(
                                                     dialogList[index].imageFirst,
-                                                    width: 150,
+                                                    width: 120,
                                                     height: 150,
                                                   ),
-                                                  Image.asset(
+                                                  Image.network(
                                                     dialogList[index].imageSecond,
-                                                    width: 150,
+                                                    width: 120,
                                                     height: 150,
                                                   ),
 
@@ -300,7 +306,7 @@ class _SelectedLevel extends State<SelectedLevel> {
                                             Navigator.pop(context);
                                           }else{
                                             setState(() {
-                                              btnText = "Previous";
+                                              btnText = "Prev";
                                             });
                                             _controller.previousPage(
                                                 duration: _kDuration, curve: _kCurve);
@@ -308,11 +314,11 @@ class _SelectedLevel extends State<SelectedLevel> {
 
                                         },
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Color(0xFF063464),
+                                          //  32 backgroundColor: Color(0xFF063464),
                                           // primary: Colors.transparent,
 
                                           padding:
-                                          const EdgeInsets.symmetric(horizontal: 50, ),
+                                          const EdgeInsets.symmetric(horizontal: 40, ),
                                           elevation: 6.0,
                                         ),
                                         child: Text(btnText,
@@ -336,7 +342,7 @@ class _SelectedLevel extends State<SelectedLevel> {
                                           }
                                           else{
                                             setState(() {
-                                              btnText = "Previous";
+                                              btnText = "Prev";
                                             });
                                           }
 
@@ -344,9 +350,8 @@ class _SelectedLevel extends State<SelectedLevel> {
 
                                         },
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF063464),
+                                          //  32 backgroundColor: const Color(0xFF063464),
                                           // primary: Colors.transparent,
-
                                           padding:
                                           const EdgeInsets.symmetric(horizontal: 50, ),
                                           elevation: 6.0,
@@ -378,7 +383,7 @@ class _SelectedLevel extends State<SelectedLevel> {
       height: 50.0,
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-              backgroundColor : Colors.white,
+            //  32 backgroundColor : Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6.0),
                   side: const BorderSide(color: Color(0xFF063464))),
@@ -406,27 +411,65 @@ class _SelectedLevel extends State<SelectedLevel> {
     );
   }
 
+  Future<void> getRulesData() async {
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try{
+      final response = await get(
+          Uri.parse(ApiConstants.baseUrl + ApiConstants.getGameRules),
+          headers: {
+            'Authorization': 'Bearer ${prefs.getString(ApiConstants.accessTokenSP)}',
+          },
+
+      );
+
+      Map<String, dynamic> data = json.decode(response.body);
+      debugPrint("Data : $data");
+
+      if (data['status'] == "true") {
+
+        var rules = data['data'] as List;
+        dialogList.clear();
+
+        /*   standard_data   */
+        for (var i = 0; i < rules.length; i++) {
+          var employeeDataObj = rules[i];
+          dialogList.add(DialogModel(title: employeeDataObj["Title"].toString(), description: employeeDataObj["Description"].toString(),
+            imageFirst: employeeDataObj["Image"].toString(), imageSecond: employeeDataObj["Image2"].toString(),
+          ));
+        }
+
+      }
+      else {
+        // Fluttertoast.showToast(
+        //   msg: data['message'],
+        //   toastLength: Toast.LENGTH_SHORT,
+        //   gravity: ToastGravity.CENTER,
+        // );
+      }
+
+    }catch(e){
+      print("Error : $e");
+
+    }
+  }
+
 }
 
 
 /*   Item Data     */
 class DialogModel{
 
-  const DialogModel({required this.title, required this.imageFirst, required this.imageSecond});
+  const DialogModel({required this.title, required this.imageFirst, required this.imageSecond, required this.description});
 
   final String title;
   final String imageFirst;
   final String imageSecond;
+  final String description;
 
 }
 
-List<DialogModel> dialogList = <DialogModel>[
-
-  const DialogModel(title: 'The upper bead has the value of 5 and the lower beads have the value of 1 each.', imageFirst: "images/rule_image.png", imageSecond: "images/rule_image1.png"),
-  const DialogModel(title: 'The upper bead has the value of 50 and lower beads have the value of 10 each.', imageFirst: "images/ten1.png", imageSecond: "images/ten2.png"),
-  const DialogModel(title: 'The upper bead has the value of 500 and lower beads have the value of 100 each.', imageFirst: "images/hundred1.png", imageSecond: "images/hundred2.png"),
-
-];
 
 
 

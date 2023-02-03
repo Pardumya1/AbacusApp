@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+//import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 
 class DemoFile extends StatefulWidget {
@@ -14,9 +14,9 @@ class _DemoFile extends State<DemoFile> {
       appBar: AppBar(
         title: Text('Syncfusion Flutter PDF Viewer'),
       ),
-      body: SfPdfViewer.network(
+      /*body: SfPdfViewer.network(
         'https://cdn.syncfusion.com/content/PDFViewer/flutter-succinctly.pdf',
-      ),
+      ),*/
     );
   }
 }

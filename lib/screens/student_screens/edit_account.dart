@@ -1,6 +1,5 @@
 
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -150,7 +149,7 @@ class _EditAccount extends State<EditAccount> {
                       height: 50.0,
                       child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF063464),
+                            //  32  backgroundColor: const Color(0xFF063464),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(6.0),
                                   side: const BorderSide(color: Color(0xFF063464))),
@@ -483,7 +482,7 @@ class _EditAccount extends State<EditAccount> {
                                   ),
                                   textButtonTheme: TextButtonThemeData(
                                     style: TextButton.styleFrom(
-                                      foregroundColor: Colors.black, // button text color
+                                      //  32 foregroundColor: Colors.black, // button text color
                                     ),
                                   ),
                                 ),

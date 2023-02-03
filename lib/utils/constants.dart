@@ -19,7 +19,8 @@ class ApiConstants {
   static String submitStudentTestEndpoint = 'submit_student_test';
   static String studentLevelListEndpoint = 'student_level_list';
   static String levelAssessmentPaperEndpoint = 'level_assessment_paper';
-
+  static String submitStudentGameEndpoint = 'submit_play_games';
+  static String getGameRules = 'get_game_rules';
 
 
 

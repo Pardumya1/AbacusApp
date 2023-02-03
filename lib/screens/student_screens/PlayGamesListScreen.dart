@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:abacus_app/screens/student_screens/play_screen.dart';
 import 'package:abacus_app/screens/student_screens/quiz/screens/quizz_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ class PlayGamesList extends StatefulWidget {
   static const String routeName = '/PlayGamesList';
   const PlayGamesList({Key? key}) : super(key: key);
 
+
   @override
   State<StatefulWidget> createState() => _PlayGamesList();
 }
@@ -25,7 +27,7 @@ class _PlayGamesList extends State<PlayGamesList> with WidgetsBindingObserver {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<playGamesModel> gamesList = [];
-
+  List<String> questionsList = [];
 
   @override
   void initState() {
@@ -182,7 +184,7 @@ class _PlayGamesList extends State<PlayGamesList> with WidgetsBindingObserver {
       Map<String, dynamic> data = json.decode(response.body);
       debugPrint("Data : $data");
 
-      if (data['status'] == "True") {
+      if (data['status'] == "true") {
 
         var employee_list = data['data'] as List;
         gamesList.clear();
@@ -190,7 +192,9 @@ class _PlayGamesList extends State<PlayGamesList> with WidgetsBindingObserver {
         /*   standard_data   */
         for (var i = 0; i < employee_list.length; i++) {
           var employeeDataObj = employee_list[i];
-          gamesList.add(playGamesModel(employeeDataObj["id"].toString(), employeeDataObj["TestName"].toString(), employeeDataObj["Level"].toString(), employeeDataObj["Image"].toString(), employeeDataObj["Status"].toString(), employeeDataObj["Time"].toString()));
+          gamesList.add(playGamesModel(employeeDataObj["TestDuration"].toString(), employeeDataObj["id"].toString(), employeeDataObj["TestName"].toString(),
+              employeeDataObj["Level"].toString(), employeeDataObj["Image"].toString(), employeeDataObj["Status"].toString(),
+              employeeDataObj["Time"].toString(), employeeDataObj["questions"]));
         }
 
       }
@@ -231,7 +235,7 @@ class ItemTile extends StatelessWidget {
             context,
             MaterialPageRoute(
               // builder: (context) => QuizzScreen(name : gamesList[itemNo].TestName, id : gamesList[itemNo].id),
-              builder: (context) => PlayScreen(levelStatus: 'd',levelId: "1", name : gamesList[itemNo].TestName)
+              builder: (context) => PlayScreen(testDuration: gamesList[itemNo].testDuration, gameId: gamesList[itemNo].id,levelId: gamesList[itemNo].Level, name : gamesList[itemNo].TestName,  questionsList : gamesList[itemNo].questionList, levelStatus: 's',)
             ),
           );
 

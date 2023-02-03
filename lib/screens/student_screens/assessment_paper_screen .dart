@@ -16,7 +16,8 @@ import 'model/assessmentPaperListModel.dart';
 class AssessmentPaperScreen extends StatefulWidget {
 
   static const String routeName = '/AssessmentPaperScreen';
-  const AssessmentPaperScreen({super.key});
+  final String levelCode;
+  const AssessmentPaperScreen({required this.levelCode, super.key});
 
   @override
   State<StatefulWidget> createState() => _AssessmentPaperScreen();
@@ -118,9 +119,9 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
   }
 
   Widget buildBody() {
+
     return SizedBox(
         width: double.infinity,
-
         child: Stack(
             children: [
 
@@ -132,7 +133,6 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
             ]
 
         )
-
     );
 
   }
@@ -164,7 +164,8 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
                     ],
                   ),
                 );
-              }else{
+              }
+              else{
                 return const Center(child: CircularProgressIndicator());
               }
 
@@ -190,7 +191,7 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
 
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const PDFScreen(),
+                    builder: (_) => PDFScreen(UploadPDF : post.UploadPDF),
                   ),
                 );
 
@@ -208,6 +209,8 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
+    debugPrint("LevelCode : ${widget.levelCode}");
+
     try{
       final response = await post(
           Uri.parse(ApiConstants.baseUrl + ApiConstants.levelAssessmentPaperEndpoint),
@@ -217,7 +220,7 @@ class _AssessmentPaperScreen extends State<AssessmentPaperScreen> {
           body: {
             'student_id' : prefs.getString(ApiConstants.studentID),
             'student_type' : prefs.getString(ApiConstants.studentLoginType),
-            'level_code' : 'EL-02',
+            'level_code' : widget.levelCode,
           }
       );
 

@@ -1,27 +1,30 @@
+import 'package:abacus_app/screens/student_screens/PlayGamesListScreen.dart';
+import 'package:abacus_app/screens/student_screens/studentHome.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class ScoreScreen extends StatefulWidget {
   static const String routeName = '/ScoreScreen';
+  final String total_marks;
+  final String student_marks;
+  final String correct_answers;
+  final String wrong_answers;
+  final String total_questions;
+  final String level;
+  final String percentage;
+  final String missed_questions;
+  final List questionList;
+
+
+  const ScoreScreen({required this.level, required this.total_marks, required this.student_marks, required this.correct_answers, required this.wrong_answers,
+    required this.total_questions,required this.percentage, required this.missed_questions, required this.questionList, Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ScoreScreen();
 }
 
 class _ScoreScreen extends State<ScoreScreen> {
-  List<String> countries = [
-    "01",
-    "02",
-    "03",
-    "04",
-    "05",
-    "06",
-    "07",
-    "08",
-    "09",
-    "10"
-  ];
 
   @override
   void initState() {
@@ -46,7 +49,7 @@ class _ScoreScreen extends State<ScoreScreen> {
                     statusBarIconBrightness: Brightness.light,
                     statusBarBrightness: Brightness.light
                 ),
-                title: const Text("Level 1"),
+                title: Text("Level " + widget.level),
                 leading: IconButton(
                   onPressed: () {
                     Navigator.pop(context);
@@ -105,7 +108,7 @@ class _ScoreScreen extends State<ScoreScreen> {
 
           Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children:  [
                 Expanded(
                    flex: 5,
                     child: Padding(
@@ -125,7 +128,7 @@ class _ScoreScreen extends State<ScoreScreen> {
                   flex: 5,
                   child: Padding(
                       padding: EdgeInsets.only(top: 20, left: 10, right: 10),
-                      child: Text("Score : 30",
+                      child: Text("Score : " + widget.student_marks + "/"+ widget.total_marks,
                           textAlign: TextAlign.end,
                           style: TextStyle(
                               decoration: TextDecoration.none,
@@ -169,8 +172,8 @@ class _ScoreScreen extends State<ScoreScreen> {
                               child: CircularPercentIndicator(
                                 radius: 100.0,
                                 lineWidth: 25.0,
-                                percent: 0.6,
-                                center: const Text("60%",
+                                percent: double.parse(widget.percentage),
+                                center: Text((widget.percentage).replaceFirst("0.", "") +"%",
                                     style: TextStyle(
                                         decoration: TextDecoration.none,
                                         fontSize: 30,
@@ -185,7 +188,7 @@ class _ScoreScreen extends State<ScoreScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
 
-                                  Container(child: const Text("Correct Answer 60%",
+                                  Container(child:  Text("Total Questions    " + widget.total_questions,
                                       style: TextStyle(
                                           decoration: TextDecoration.none,
                                           fontSize: 14,
@@ -195,8 +198,19 @@ class _ScoreScreen extends State<ScoreScreen> {
 
                                   Container(
                                     margin:
-                                    EdgeInsets.only(bottom: 8, top: 8, left: 5),
-                                    child: const Text("Wrong Answer 30%",
+                                    EdgeInsets.only(top: 10),
+                                    child:  Text("Correct Answers    " + widget.correct_answers,
+                                      style: TextStyle(
+                                          decoration: TextDecoration.none,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          fontFamily: "Montserrat",
+                                          color: Colors.black)),),
+
+                                  Container(
+                                    margin:
+                                    EdgeInsets.only(top: 10),
+                                    child:  Text("Wrong Answers      " + widget.wrong_answers,
                                         style: TextStyle(
                                             decoration: TextDecoration.none,
                                             fontSize: 14,
@@ -204,14 +218,15 @@ class _ScoreScreen extends State<ScoreScreen> {
                                             fontFamily: "Montserrat",
                                             color: Colors.black)),),
 
-                                  Container(child: const Text("Missed Questions 10%",
+                                  Container( margin:
+                                  EdgeInsets.only(top: 10),
+                                    child:  Text("Missed Questions   " +widget.missed_questions,
                                       style: TextStyle(
                                           decoration: TextDecoration.none,
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           fontFamily: "Montserrat",
                                           color: Colors.black)),)
-
 
                                 ]),
 
@@ -229,7 +244,7 @@ class _ScoreScreen extends State<ScoreScreen> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Row(
-                                    children: countries.map((country) {
+                                    children: widget.questionList.asMap().entries.map((entry) {
                                       return Container(
                                           height: 115,
                                           width: 60,
@@ -258,7 +273,7 @@ class _ScoreScreen extends State<ScoreScreen> {
                                                           Color(0x735CC15C)),
                                                     ),
                                                   ),
-                                                  child: Text(country,
+                                                  child: Text((entry.key + 1).toString(),
                                                       style: const TextStyle(
                                                           decoration:
                                                           TextDecoration.none,
@@ -269,13 +284,13 @@ class _ScoreScreen extends State<ScoreScreen> {
                                                           "Montserrat",
                                                           color: Colors.black)),
                                                 ),
+
                                                 Container(
                                                   padding: EdgeInsets.only(
                                                       bottom: 15, top: 15),
-                                                  child: Icon(
-                                                    Icons.check,
-                                                    color: Colors.green,
-                                                  ),
+                                                      //0 - wrong, 1- right, 2- missed answer
+                                                     child: _answerStatus(entry.value)
+                                                     // child: entry.value == 1 ? Icon(Icons.check, color: Colors.green) : Icon(Icons.close, color: Colors.red),
                                                 ),
                                               ]));
                                     }).toList(),
@@ -285,14 +300,17 @@ class _ScoreScreen extends State<ScoreScreen> {
                               margin: const EdgeInsets.only(
                                   left: 0, right: 20, top: 40),
                               alignment: Alignment.center,
-                              child: const Text(
-                                "Try Wrong Question!",
-                                style: TextStyle(
-                                    decoration: TextDecoration.none,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: "Montserrat",
-                                    color: Color(0xff29392a)),
+                              child: Visibility(
+                                  child: Text(
+                                    "Try Wrong Question!",
+                                    style: TextStyle(
+                                        decoration: TextDecoration.none,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: "Montserrat",
+                                        color: Color(0xff29392a)),
+                                  ),
+                                visible: widget.missed_questions == 0? true: false,
                               ),
                             ),
                             Container(
@@ -301,57 +319,78 @@ class _ScoreScreen extends State<ScoreScreen> {
                               child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      margin: EdgeInsets.only(left: 0, right: 20),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: Colors.black,
-                                            width: 1 // red as border color
+                                    GestureDetector(
+                                      onTap: (){
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) => const PlayGamesList()),
+                                        );
+                                      },
+                                      child: new  Container(
+                                        margin: EdgeInsets.only(left: 0, right: 20),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.black,
+                                              width: 1 // red as border color
+                                          ),
+                                          borderRadius: BorderRadius.circular(6),
                                         ),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      padding: const EdgeInsets.only(
-                                          top: 10,
-                                          left: 40,
-                                          right: 40,
-                                          bottom: 10),
-                                      child: const Text(
-                                        "Retry",
-                                        style: TextStyle(
-                                            decoration: TextDecoration.none,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            fontFamily: "Montserrat",
-                                            color: Color(0xff29392a)),
+                                        padding: const EdgeInsets.only(
+                                            top: 10,
+                                            left: 40,
+                                            right: 40,
+                                            bottom: 10),
+                                        child: const Text(
+                                          "Retry",
+                                          style: TextStyle(
+                                              decoration: TextDecoration.none,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              fontFamily: "Montserrat",
+                                              color: Color(0xff29392a)),
+                                        ),
                                       ),
                                     ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Color(0xff063464),
-                                        border: Border.all(
-                                            color: Color(0xff063464),
-                                            width: 1 // red as border color
-                                        ),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      alignment: Alignment.center,
-                                      margin: EdgeInsets.only(left: 20, right: 0),
-                                      padding: const EdgeInsets.only(
-                                          top: 10,
-                                          left: 40,
-                                          right: 40,
-                                          bottom: 10),
-                                      height: 40,
-                                      child: const Text(
-                                        "Exit",
-                                        style: TextStyle(
-                                            decoration: TextDecoration.none,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            fontFamily: "Montserrat",
-                                            color: Colors.white),
-                                      ),
-                                    ),
+
+
+                                    GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const StudentHome()),
+                          );
+                        },
+                        child: new  Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xff063464),
+                            border: Border.all(
+                                color: Color(0xff063464),
+                                width: 1 // red as border color
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          alignment: Alignment.center,
+                          margin: EdgeInsets.only(left: 20, right: 0),
+                          padding: const EdgeInsets.only(
+                              top: 10,
+                              left: 40,
+                              right: 40,
+                              bottom: 10),
+                          height: 40,
+                          child: const Text(
+                            "Exit",
+                            style: TextStyle(
+                                decoration: TextDecoration.none,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: "Montserrat",
+                                color: Colors.white),
+
+                          ),
+
+                        ),
+                    )
+
                                   ]),
                             ),
                           ]),
@@ -367,4 +406,15 @@ class _ScoreScreen extends State<ScoreScreen> {
       )),
     );
   }
+
+  Widget _answerStatus(status) {
+    if (status == 0) {
+      return Icon(Icons.close, color: Colors.red);
+    } else if(status == 1) {
+      return Icon(Icons.check, color: Colors.green);
+    } else {
+      return Icon(Icons.remove, color: Colors.black);
+    }
+  }
+
 }

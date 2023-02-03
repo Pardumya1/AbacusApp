@@ -198,7 +198,8 @@ class _StudentTestScreen extends State<StudentTestScreen> {
                 if(upComingList[index].testStatus == '0'){
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => QuizzScreen(name : upComingList[index].TestName, id : upComingList[index].id, questionList : upComingList[index].questionList),
+                      builder: (context) => QuizzScreen(name : upComingList[index].TestName, id : upComingList[index].id, questionList : upComingList[index].questionList,
+                      level: upComingList[index].Level),
                     ),
                   );
                 }else{

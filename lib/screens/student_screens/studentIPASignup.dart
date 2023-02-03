@@ -400,7 +400,7 @@ class _studentIPASignup extends State<studentIPASignup> {
                     child: ElevatedButton(
 
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF063464),
+                          //  32 backgroundColor: const Color(0xFF063464),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(6.0),
                                 side: const BorderSide(color: Color(0xFF063464))),
@@ -562,7 +562,7 @@ class _studentIPASignup extends State<studentIPASignup> {
       alignment: Alignment.bottomCenter,
       child: TextButton(
         style: TextButton.styleFrom(
-          foregroundColor: const Color(0xFF999999),
+          //  32 foregroundColor: const Color(0xFF999999),
         ),
         child: RichText(
           textAlign: TextAlign.center,

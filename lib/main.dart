@@ -11,11 +11,10 @@ class MyHttpOverrides extends HttpOverrides{
   }
 }
 
-void main() {
+Future<void> main() async {
   HttpOverrides.global = MyHttpOverrides();
-  runApp(MyApp());
+  runApp(MaterialApp(home:MyApp()));
 }
-
 
 class MyApp extends StatelessWidget {
   @override

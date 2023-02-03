@@ -63,7 +63,7 @@ class _UploadContent extends State<UploadContent> {
         Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
-            systemOverlayStyle: SystemUiOverlayStyle(
+            systemOverlayStyle: const SystemUiOverlayStyle(
                 statusBarColor: Colors.transparent,
                 statusBarIconBrightness: Brightness.dark,
                 statusBarBrightness: Brightness.dark),
@@ -713,7 +713,7 @@ class _UploadContent extends State<UploadContent> {
                   child: ElevatedButton(
 
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF063464),
+                        //  32 backgroundColor: const Color(0xFF063464),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6.0),
                               side: const BorderSide(color: Color(0xFF063464))),

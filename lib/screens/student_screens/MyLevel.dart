@@ -166,7 +166,7 @@ class _LevelScreen extends State<LevelScreen> {
                         onTap: () {
 
                           if(levelList[index].levelStatus == "2"){
-                            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => const AssessmentPaperScreen()));
+                            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => AssessmentPaperScreen(levelCode : levelList[index].LevelGUID)));
                           }
 
                         },

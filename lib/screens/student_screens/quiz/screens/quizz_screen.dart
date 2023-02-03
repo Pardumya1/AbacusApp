@@ -11,8 +11,10 @@ import '../../studentHome.dart';
 class QuizzScreen extends StatefulWidget {
   final String name;
   final String id;
+  final String level;
   final List questionList;
-  const QuizzScreen({required this.name, required this.id, required this.questionList, Key? key}) : super(key: key);
+
+  const QuizzScreen({required this.name, required this.id, required this.questionList, required this.level, Key? key}) : super(key: key);
 
   @override
   _QuizzScreenState createState() => _QuizzScreenState();
@@ -22,7 +24,6 @@ class _QuizzScreenState extends State<QuizzScreen> {
   bool btnPressed = false;
   PageController? _controller;
   String btnText = "Next Question";
-
   final answerFocus = FocusNode();
   final TextEditingController answerController = TextEditingController();
   List<AnswerModel> answerList = [];
@@ -75,12 +76,17 @@ class _QuizzScreenState extends State<QuizzScreen> {
 
     return WillPopScope(
         onWillPop: showExitPopup,
-        child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            backgroundColor: Colors.white,
-            body: Scaffold(
-                backgroundColor: Colors.transparent,
-                appBar: AppBar(
+        child: Stack(children: <Widget>[
+            Image.asset(
+            "images/background.png",
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.cover,
+          ),
+         Scaffold(
+             backgroundColor: Colors.transparent,
+             extendBodyBehindAppBar: true,
+             appBar: AppBar(
                   systemOverlayStyle: const SystemUiOverlayStyle(
                       statusBarColor: Colors.transparent,
                       statusBarIconBrightness: Brightness.dark,
@@ -96,6 +102,7 @@ class _QuizzScreenState extends State<QuizzScreen> {
                         'images/back.png',
                         width: 14,
                         height: 14,
+                        color: Colors.white,
                         // fit: BoxFit.fill,
                       ),
                     ),
@@ -104,14 +111,33 @@ class _QuizzScreenState extends State<QuizzScreen> {
                       decoration: TextDecoration.none,
                       fontSize: 18.0,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: Colors.white,
                       fontFamily: "Montserrat"),
                   centerTitle: true,
                   elevation: 0,
                   backgroundColor: Colors.transparent,
                 ),
-                body: showContent())));
+                body: buildBody()
+            )
+        ]
+        )
+    );
 
+  }
+
+  Widget buildBody() {
+    return SizedBox(
+        width: double.infinity,
+        child: Stack(children: [
+          const Image(image: AssetImage("images/home_bg.png"), fit: BoxFit.fill),
+
+          showContent(),
+
+        ]
+        )
+
+
+    );
   }
 
   /*  Show Content   */
@@ -121,13 +147,9 @@ class _QuizzScreenState extends State<QuizzScreen> {
           child: Container(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-            ),
+
             child: Padding(
-                padding: const EdgeInsets.all(18.0),
+                padding: const EdgeInsets.only(top: 40, left: 10, right: 10),
                 child: PageView.builder(
                   controller: _controller!,
                   onPageChanged: (page) {
@@ -143,125 +165,163 @@ class _QuizzScreenState extends State<QuizzScreen> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          "Question ${index + 1}/${widget.questionList.length}",
-                          textAlign: TextAlign.start,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 28.0,
-                          ),
-                        ),
-
                         Container(
-                          margin: EdgeInsets.only(top: 5),
-                          child: Text(
-                            "${widget.questionList[index]['Marks']} marks for the question.",
-                            textAlign: TextAlign.start,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 20.0,
-                            ),
+                          margin: EdgeInsets.only(bottom: 20),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  flex: 7,
+                                  child: Text("Question ${index + 1}/${widget.questionList.length}",
+                                      textAlign: TextAlign.start,
+                                      style: TextStyle(
+                                          decoration: TextDecoration.none,
+                                          fontSize: 16.0,
+                                          color: Colors.white,
+                                          fontFamily: "Montserrat",
+                                          fontWeight: FontWeight.w600))),
+                              Expanded(
+                                  flex: 3,
+                                  child: Container(
+                                      child: Text("${widget.questionList[index]['Marks']} marks",
+                                          textAlign: TextAlign.end,
+                                          style: TextStyle(
+                                              decoration: TextDecoration.none,
+                                              fontSize: 16.0,
+                                              color: Colors.white,
+                                              fontFamily: "Montserrat",
+                                              fontWeight: FontWeight.w600))
+                                  ))
+                            ],
                           ),
                         ),
-
-                        const Divider(
-                          color: Colors.black,
-                        ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
-
                         Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 20),
-                          child: Text(
-                            widget.questionList[index]['Question'],
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 22.0,
-                            ),
+                          padding: const EdgeInsets.all(10),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20), topRight: Radius.circular(20)),
                           ),
-                        ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
 
-                        // widget.questionList[index]['Image'].isEmpty ? Container() :
-                        //
-                        // Container(
-                        //   margin: const EdgeInsets.only(bottom: 20),
-                        //   child: SizedBox(
-                        //       width: double.infinity,
-                        //       child:Image.network(
-                        //         widget.questionList[index]['Image'],
-                        //       )),
-                        // ),
-                        Form(
-                            key: _formKey,
-                            child: TextFormField(
-                              autofocus: true,
-                              autocorrect: false,
-                              focusNode: answerFocus,
-                              controller: answerController,
-                              keyboardType: TextInputType.multiline,
-                              minLines: 4,
-                              maxLines: 8,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                filled: true,
-                                fillColor: Color(0xFFF2F2F2),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(4)),
-                                  borderSide: BorderSide(width: 1),
-                                ),
+                            children: [
+                              Container(
+                                  margin: const EdgeInsets.only(left: 5, right: 5, top :5),
+                                  padding: const EdgeInsets.all(20),
+                                  width: double.infinity,
+                                  decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.only(
+                                          topRight:
+                                          Radius.circular(20.0),
+                                          topLeft:
+                                          Radius.circular(20.0)),
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              "images/background.png"),
+                                          fit: BoxFit.cover)),
+                                  child: Text(
+                                    widget.questionList[index]['Question'],
+                                    style: TextStyle(
+                                        decoration: TextDecoration.none,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: "Montserrat",
+                                        color: Colors.black),
+                                  )
                               ),
-                            )),
-                        const SizedBox(
-                          height: 20.0,
-                        ),
-                        RawMaterialButton(
-                          onPressed: () {
-                            final isValid = _formKey.currentState!.validate();
-                            if (!isValid) {
-                              return;
-                            }
 
-                            _formKey.currentState!.save();
+                              Container(
+                                margin: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
+                                padding: const EdgeInsets.only(top:10, left: 10, right: 10, bottom: 20),
+                                decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.only(
+                                        bottomLeft:
+                                        Radius.circular(20.0),
+                                        bottomRight:
+                                        Radius.circular(20.0)),
+                                    image: DecorationImage(
+                                        image: AssetImage(
+                                            "images/background.png"),
+                                        fit: BoxFit.cover)),
+                                child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.stretch,
+                                    children: <Widget>[
+                                      Form(
+                                          key: _formKey,
+                                          child: TextFormField(
+                                            autofocus: false,
+                                            autocorrect: false,
+                                            focusNode: answerFocus,
+                                            controller: answerController,
+                                            keyboardType: TextInputType.multiline,
+                                            minLines: 4,
+                                            maxLines: 8,
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Please enter some text';
+                                              }
+                                              return null;
+                                            },
+                                            decoration: const InputDecoration(
+                                              filled: true,
+                                              fillColor: Color(0xFFF2F2F2),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.all(Radius.circular(4)),
+                                                borderSide: BorderSide(width: 1),
+                                              ),
+                                            ),
+                                          )),
 
+                                    ]),
+                              ),
 
-                            Map<String, String> details = {};
-                            details["question_id"] = widget.questionList[index]['id'].toString();
-                            details["answer"] = answerController.text.toString();
+                              RawMaterialButton(
+                                onPressed: () {
+                                  final isValid = _formKey.currentState!.validate();
+                                  if (!isValid) {
+                                    return;
+                                  }
 
-                            detailsArray.add(details);
-                            answerController.text = "";
+                                  _formKey.currentState!.save();
 
-                            if (_controller!.page?.toInt() == widget.questionList.length - 1) {
+                                  Map<String, String> details = {};
+                                  details["question_id"] = widget.questionList[index]['id'].toString();
+                                  details["answer"] = answerController.text.toString();
 
-                              // showLoaderDialog(context);
-                              submitTestFunction(context);
+                                  detailsArray.add(details);
+                                  answerController.text = "";
 
-                            } else {
-                              _controller!.nextPage(
-                                  duration: const Duration(milliseconds: 250),
-                                  curve: Curves.easeInExpo);
-                              setState(() {
-                                btnPressed = false;
-                              });
-                            }
-                          },
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0)),
-                          fillColor: Colors.blue,
-                          padding: const EdgeInsets.all(18.0),
-                          elevation: 0.0,
-                          child: Text(
-                            btnText,
-                            style: const TextStyle(color: Colors.white),
+                                  if (_controller!.page?.toInt() == widget.questionList.length - 1) {
+
+                                    // showLoaderDialog(context);
+                                    submitTestFunction(context);
+
+                                  } else {
+                                    _controller!.nextPage(
+                                        duration: const Duration(milliseconds: 250),
+                                        curve: Curves.easeInExpo);
+                                    setState(() {
+                                      btnPressed = false;
+                                    });
+                                  }
+                                },
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0)),
+                                fillColor: Colors.blue,
+                                padding: const EdgeInsets.all(18.0),
+                                elevation: 0.0,
+                                child: Text(
+                                  btnText,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              )
+                            ],
                           ),
                         )
+
                       ],
                     );
                   },
@@ -275,7 +335,7 @@ class _QuizzScreenState extends State<QuizzScreen> {
   /*  Submit Test   */
   void submitTestFunction(BuildContext mContext) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    debugPrint("test level;===>"+ widget.level);
     try{
       Response response = await post(
           Uri.parse(ApiConstants.baseUrl + ApiConstants.submitStudentTestEndpoint),
@@ -287,6 +347,7 @@ class _QuizzScreenState extends State<QuizzScreen> {
             'student_type' : prefs.getString(ApiConstants.studentLoginType),
             'test_id' : widget.id,
             'answers' : json.encode(detailsArray),
+            'Level':widget.level,
           }
       );
 
@@ -309,7 +370,6 @@ class _QuizzScreenState extends State<QuizzScreen> {
 
       }
       else {
-
         Fluttertoast.showToast(
           msg: dataObj['message'],
           toastLength: Toast.LENGTH_SHORT,

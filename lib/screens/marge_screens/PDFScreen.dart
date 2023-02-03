@@ -1,13 +1,24 @@
 
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+
+import '../../utils/constants.dart';
 
 
 class PDFScreen extends StatefulWidget {
 
   static const String routeName = '/PDFScreen';
-  const PDFScreen({Key? key}) : super(key: key);
+  final String UploadPDF;
+  const PDFScreen({required this.UploadPDF ,Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _PDFScreen();
@@ -17,12 +28,88 @@ class PDFScreen extends StatefulWidget {
 class _PDFScreen extends State<PDFScreen>
     with WidgetsBindingObserver {
 
-  final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
+  // final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
+  late File _file;
 
   final emailFocus = FocusNode();
   final TextEditingController newEmailController = TextEditingController();
 
   String emailVal = "";
+
+
+  Future getFile()async{
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf']
+    );
+
+    if (result != null) {
+      setState(() {
+        _file = File(result.files.single.path!);
+      });
+
+      _uploadFile(context);
+
+      debugPrint("file : $_file");
+
+    } else {
+      // User canceled the picker
+    }
+  }
+
+
+  void _uploadFile(Context context) async {
+    String fileName = basename(_file.path);
+    print("file base name:$fileName");
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try {
+      FormData formData = FormData.fromMap({
+        "student_id": "1",
+        "student_type": "0",
+        "level_code": "212313",
+        "pdf_file": await MultipartFile.fromFile(_file.path, filename: fileName),
+      });
+
+
+      Response response = await Dio().post("https://abacus.mytura.in/api/student_app_submit",
+          data: formData,
+          options: Options(
+              headers: {
+                'Authorization': 'Bearer ${prefs.getString(ApiConstants.accessTokenSP)}',
+              },
+              validateStatus: (_) => true
+          )
+      );
+      print("File upload response: $response");
+
+      Map<String, dynamic> dataObj = json.decode(response.toString());
+      debugPrint("dataObj : $dataObj");
+
+      if(dataObj['status'] == "true"){
+
+        Fluttertoast.showToast(
+          msg: dataObj['message'],
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+
+        Navigator.pop(this.context);
+      }
+
+   /*   Fluttertoast.showToast(
+        msg: dataObj['message'],
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+      );*/
+
+      // _showSnackBarMsg(response.data['message']);
+    } catch (e) {
+      print("expectation Caugch: $e");
+    }
+
+  }
 
 
   @override
@@ -44,6 +131,7 @@ class _PDFScreen extends State<PDFScreen>
 
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -77,21 +165,10 @@ class _PDFScreen extends State<PDFScreen>
                     Container(
                         margin: const EdgeInsets.only(top: 10),
                         child: Image.asset(
-                          "images/logo.png",
+                          "images/logo_white.png",
                           width: 60,
                           height: 60,
                         )),
-                    // Container(
-                    //     margin: const EdgeInsets.only(bottom: 5, left: 5),
-                    //     child: const Text(
-                    //       "Dashboard",
-                    //       style: TextStyle(
-                    //           decoration: TextDecoration.none,
-                    //           fontSize: 18,
-                    //           fontWeight: FontWeight.bold,
-                    //           fontFamily: "Montserrat",
-                    //           color: Colors.black),
-                    //     )),
                   ],
                 ),
                 GestureDetector(
@@ -107,7 +184,7 @@ class _PDFScreen extends State<PDFScreen>
                           child: const Image(
                             image: AssetImage("images/menu_logout.png"),
                             height: 24,
-                            color: Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                         Container(
@@ -120,7 +197,7 @@ class _PDFScreen extends State<PDFScreen>
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: "Montserrat",
-                                  color: Colors.black),
+                                  color: Colors.white),
                             )),
                       ]),
                 )
@@ -128,14 +205,13 @@ class _PDFScreen extends State<PDFScreen>
             ),
           ),
 
-          Flexible(
-            flex: 1,
-            child: SfPdfViewer.network(
-              'https://www.africau.edu/images/default/sample.pdf',
-              key: _pdfViewerKey,
-            ),
-          ),
-
+          // Flexible(
+          //   flex: 1,
+          //   child: SfPdfViewer.network(
+          //     widget.UploadPDF,
+          //     key: _pdfViewerKey,
+          //   ),
+          // ),
 
           Container(
             padding: const EdgeInsets.only(left: 10, right: 10),
@@ -146,7 +222,7 @@ class _PDFScreen extends State<PDFScreen>
 
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF063464),
+                      // backgroundColor: const Color(0xFF063464),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6.0),
                             side: const BorderSide(color: Color(0xFF063464))),
@@ -154,6 +230,7 @@ class _PDFScreen extends State<PDFScreen>
                     ),
                     onPressed: (){
 
+                      getFile();
 
                       // final isValid = _formKey.currentState!.validate();
                       // if (!isValid) {
@@ -175,6 +252,5 @@ class _PDFScreen extends State<PDFScreen>
         ]));
   }
 
-
-
 }
+

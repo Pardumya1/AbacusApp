@@ -1,19 +1,27 @@
+import 'dart:convert';
+import 'package:abacus_app/screens/student_screens/model/upcomingTestModel.dart';
 import 'package:abacus_app/screens/student_screens/score_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_countdown_timer/index.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../utils/constants.dart';
 import '../../utils/screen.dart';
-
+import 'package:webview_flutter/webview_flutter.dart';
 
 class PlayScreen extends StatefulWidget {
-
   static const String routeName = '/PlayScreen';
   final String levelStatus;
   final String levelId;
   final String name;
+  final String gameId;
+  final String testDuration;
+  final List questionsList;
 
-  const PlayScreen({super.key, required this.levelStatus, required this.levelId, required this.name});
+  const PlayScreen({super.key,required this.testDuration, required this.gameId, required this.levelId, required this.name, required this.questionsList, required this.levelStatus});
 
   @override
   State<StatefulWidget> createState() => _PlayScreen();
@@ -21,15 +29,31 @@ class PlayScreen extends StatefulWidget {
 }
 
 class _PlayScreen extends State<PlayScreen> {
-  int endTime = DateTime.now().millisecondsSinceEpoch + 10000 * 30;
+  int endTime = 0;
+  late CountdownTimerController controller;
+  WebViewController? _webViewController;
+  String valueData = "";
+  PageController? _controller;
+  String question1 = "";
+  List<questionsListModel> gamesList = [];
+  String btnText = "Next Question";
+  bool btnPressed = false;
+  final answerFocus = FocusNode();
+  List<AnswerModel> answerList = [];
+  var detailsArray = [];
 
   @override
   void initState() {
     super.initState();
+    _controller = PageController(initialPage: 0);
+    debugPrint("Duration-------"+widget.testDuration + "0");
+    endTime = DateTime.now().millisecondsSinceEpoch + 1000 * (60);
+    controller = CountdownTimerController(endTime: endTime, onEnd: onEnd);
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Stack(children: <Widget>[
       Image.asset(
         "images/background.png",
@@ -59,9 +83,8 @@ class _PlayScreen extends State<PlayScreen> {
             actions: [
               GestureDetector(
                   onTap: () {
-
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) => ScoreScreen()));
+                   /* Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) => ScoreScreen()));*/
 
                   },
                   child: Card(
@@ -85,16 +108,38 @@ class _PlayScreen extends State<PlayScreen> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(right: 10),
-                                  child: CountdownTimer(
-                                    endTime: endTime,
-                                    textStyle: const TextStyle(
-                                        fontSize: 14.0,
-                                        fontFamily: "Montserrat",
-                                        color: Colors.white),
-                                  )
+                                    padding: const EdgeInsets.only(right: 10),
+                                    child: CountdownTimer(
+                                      controller: controller,
+                                      endTime: endTime,
+                                      onEnd: onEnd,
+                                      widgetBuilder: (BuildContext context, CurrentRemainingTime? time) {
+                                        if (time == null) {
+                                          return Text('Game over', style: const TextStyle(
+                                            fontSize: 14.0,
+                                            fontFamily: "Montserrat",
+                                            color: Colors.white,
+                                          ) ,);
+                                        }
+                                        return Text(
+                                            '${time.hours == null ? "00": time.hours}:${time.min== null ? "00": time.min}:${time.sec == null ? "00": time.sec}',
+                                            style: const TextStyle(
+                                              fontSize: 14.0,
+                                              fontFamily: "Montserrat",
+                                              color: Colors.white,
+                                            )
+                                        );
+                                      },
+                                      textStyle: const TextStyle(
+                                          fontSize: 14.0,
+                                          fontFamily: "Montserrat",
+                                          color: Colors.white,
+                                          ),
+                                    )
                                 )
-                              ]))))
+                              ])
+                      )
+                  ))
             ],
             titleTextStyle: const TextStyle(
                 decoration: TextDecoration.none,
@@ -106,7 +151,8 @@ class _PlayScreen extends State<PlayScreen> {
             elevation: 0,
             backgroundColor: Colors.transparent,
           ),
-          body: buildBody()),
+          body: buildBody()
+      ),
     ]);
   }
 
@@ -115,651 +161,279 @@ class _PlayScreen extends State<PlayScreen> {
         width: double.infinity,
         child: Stack(children: [
           const Image(image: AssetImage("images/home_bg.png"), fit: BoxFit.fill),
-          showContent(),
-        ]));
-  }
 
-  showAbacus(){
-    return Container(
-      margin: const EdgeInsets.only(left: 10,right: 10, top: 30),
-      alignment: Alignment.center,
-      height: SizeConfig.blockSizeVertical*35,
-      width: SizeConfig.blockSizeHorizontal*180,
-      child: InAppWebView(
-        onWebViewCreated: (InAppWebViewController controller) {
-          var uri = "assets/index.html";
-          controller.loadFile(assetFilePath: uri);
-        },
-      ),
+          showContent(),
+
+        ]
+        )
+
 
     );
   }
 
   showContent() {
     return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
+      child:  Container(
+          padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
 
-          Container(
-        padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
-        child: Row(
-          children: [
-            const Expanded(
-                flex: 7,
-                child: Text("Let’s input number to abacus",
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                        decoration: TextDecoration.none,
-                        fontSize: 16.0,
-                        color: Colors.white,
-                        fontFamily: "Montserrat",
-                        fontWeight: FontWeight.w600))),
-            Expanded(
-                flex: 3,
-                child: Container(
-                  margin: const EdgeInsets.only(right: 10),
-                    child: const Text("1/10",
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                            decoration: TextDecoration.none,
-                            fontSize: 16.0,
-                            color: Colors.white,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.w600))
-                ))
-          ],
-        ),
-      ),
-
-          Expanded(child: SingleChildScrollView(
-
-              scrollDirection: Axis.vertical,
-              child: Container(
-                  margin: const EdgeInsets.only(top: 40),
-                  decoration: const BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20)),
-                      image: DecorationImage(
-                          image: AssetImage("images/background.png"),
-                          fit: BoxFit.cover)),
-                  child: Column(
-                    children: [
-
-                      Container(
-                        margin: const EdgeInsets.all(10),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF063464),
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                        ),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-
-                              Container(
-                                margin: const EdgeInsets.only(left: 5, right: 5, top :5 ),
-                                padding: const EdgeInsets.all(10),
-                                width: double.infinity,
-                                decoration: const BoxDecoration(
+          child: PageView.builder(
+            controller: _controller!,
+            onPageChanged: (page) {
+              if (page == widget.questionsList.length - 1) {
+                setState(() {
+                  btnText = "Submit";
+                });
+              }
+            },
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    child: Row(
+                      children: [
+                        const Expanded(
+                            flex: 7,
+                            child: Text("Let’s input number to abacus",
+                                textAlign: TextAlign.start,
+                                style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    fontSize: 16.0,
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.only(
-                                        topRight:
-                                        Radius.circular(20.0),
-                                        topLeft:
-                                        Radius.circular(20.0)),
-                                    image: DecorationImage(
-                                        image: AssetImage(
-                                            "images/background.png"),
-                                        fit: BoxFit.cover)),
-                                child: const Flexible(
-                                    flex: 1,
-                                    child: Text(
-                                      "Calculate the following multiplication.",
-                                      style: TextStyle(
-                                          decoration: TextDecoration.none,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: "Montserrat",
-                                          color: Colors.black),
-                                    )),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(
-                                    left: 5, right: 5, bottom: 5),
-                                padding: const EdgeInsets.all(10),
-                                decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.only(
-                                        bottomLeft:
-                                        Radius.circular(20.0),
-                                        bottomRight:
-                                        Radius.circular(20.0)),
-                                    image: DecorationImage(
-                                        image: AssetImage(
-                                            "images/background.png"),
-                                        fit: BoxFit.cover)),
-                                child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.stretch,
-                                    children: <Widget>[
-                                      Container(
-                                        margin: const EdgeInsets.only(
-                                            top: 10, left: 10, right: 10),
-                                        height: 90,
-                                        alignment: Alignment.center,
-                                        child: const Text(
-                                          "6 x 11 = ?",
-                                          style: TextStyle(
-                                              decoration: TextDecoration.none,
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.w700,
-                                              fontFamily: "Montserrat",
-                                              color: Colors.black),
-                                        ),
-                                      ),
-                                      /*Container(
-                                    margin: const EdgeInsets.only(
-                                        left: 10,
-                                        right: 10,
-                                        top: 20,
-                                        bottom: 20),
-                                    child: Row(
+                                    fontFamily: "Montserrat",
+                                    fontWeight: FontWeight.w600))),
+                        Expanded(
+                            flex: 3,
+                            child: Container(
+                                margin: const EdgeInsets.only(right: 10),
+                                child: Text("${index + 1}/${widget.questionsList.length}",
+                                    textAlign: TextAlign.end,
+                                    style: TextStyle(
+                                        decoration: TextDecoration.none,
+                                        fontSize: 16.0,
+                                        color: Colors.white,
+                                        fontFamily: "Montserrat",
+                                        fontWeight: FontWeight.w600))
+                            ))
+                      ],
+                    ),
+                  ),
 
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                        children: [
+                  Container(
+                      margin: const EdgeInsets.only(top: 40),
+                      decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(20),
+                              topRight: Radius.circular(20)),
+                          image: DecorationImage(
+                              image: AssetImage("images/background.png"),
+                              fit: BoxFit.cover)),
 
-                                          Expanded(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Color(0xFF063464),
-                                                  borderRadius:
-                                                  BorderRadius.circular(
-                                                      5),
-                                                ),
-                                                height: 40,
-                                                child: Row(
-                                                    mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .center,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                        const EdgeInsets
-                                                            .only(
-                                                            right: 10),
-                                                        child: Image.asset(
-                                                          'images/reset_icon.png',
-                                                          width: 14,
-                                                          height: 14,
-                                                          color: Colors.white,
-                                                          fit: BoxFit.fill,
-                                                        ),
-                                                      ),
-                                                      const Text(
-                                                        "Reset Abacus",
-                                                        style: TextStyle(
-                                                            decoration:
-                                                            TextDecoration
-                                                                .none,
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .w600,
-                                                            fontFamily:
-                                                            "Montserrat",
-                                                            color:
-                                                            Colors.white),
-                                                      ),
-                                                    ]),
-                                              )),
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.all(10),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF063464),
+                              borderRadius: BorderRadius.all(Radius.circular(20)),
+                            ),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
 
-                                          SizedBox(width: 30),
-
-                                          Expanded(
-                                              child: GestureDetector(
-                                                  onTap: () {
-                                                    showHintsAlert();
-                                                  },
-                                                  child: Container(
-                                                    decoration:
-                                                    BoxDecoration(
-                                                      color: Colors.white,
-                                                      border: Border.all(
-                                                          color: const Color(
-                                                              0XFF29392A),
-                                                          width:
-                                                          1 // red as border color
-                                                      ),
-                                                      borderRadius:
-                                                      BorderRadius
-                                                          .circular(
-                                                          5),
-                                                    ),
-                                                    alignment:
-                                                    Alignment.center,
-                                                    height: 40,
-                                                    child: Row(
-                                                        mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                        children: [
-                                                          Padding(
-                                                            padding: const EdgeInsets
-                                                                .only(
-                                                                right:
-                                                                10),
-                                                            child: Image
-                                                                .asset(
-                                                              'images/hint_icon.png',
-                                                              width: 14,
-                                                              height: 20,
-                                                              color: const Color(
-                                                                  0xff29392a),
-                                                              fit: BoxFit
-                                                                  .fill,
-                                                            ),
-                                                          ),
-                                                          const Text(
-                                                            "Hints",
-                                                            style: TextStyle(
-                                                                decoration:
-                                                                TextDecoration
-                                                                    .none,
-                                                                fontSize:
-                                                                14,
-                                                                fontWeight:
-                                                                FontWeight
-                                                                    .w600,
-                                                                fontFamily:
-                                                                "Montserrat",
-                                                                color: Color(
-                                                                    0xff29392a)),
-                                                          ),
-                                                        ]),
-                                                  )))
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 5, right: 5, top :5 ),
+                                    padding: const EdgeInsets.all(10),
+                                    width: double.infinity,
+                                    decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.only(
+                                            topRight:
+                                            Radius.circular(20.0),
+                                            topLeft:
+                                            Radius.circular(20.0)),
+                                        image: DecorationImage(
+                                            image: AssetImage(
+                                                "images/background.png"),
+                                            fit: BoxFit.cover)),
+                                      child: Text(
+                                        widget.questionsList[index]['Question'],
+                                        style: TextStyle(
+                                            decoration: TextDecoration.none,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: "Montserrat",
+                                            color: Colors.black),
+                                      )
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.only(
+                                            bottomLeft:
+                                            Radius.circular(20.0),
+                                            bottomRight:
+                                            Radius.circular(20.0)),
+                                        image: DecorationImage(
+                                            image: AssetImage(
+                                                "images/background.png"),
+                                            fit: BoxFit.cover)),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                                top: 10, left: 10, right: 10),
+                                            height: 90,
+                                            alignment: Alignment.center,
+                                            child: const Text(
+                                              "?",
+                                              style: TextStyle(
+                                                  decoration: TextDecoration.none,
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontFamily: "Montserrat",
+                                                  color: Colors.black),
+                                            ),
+                                          ),
 
                                         ]),
-                                  ),*/
-                                    ]),
-                              ),
+                                  ),
 
-                            ]),
-                      ),
-
-                      Container(
-
-                        decoration: const BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage("images/background.png"),
-                                fit: BoxFit.cover)),
-
-                        height: SizeConfig.blockSizeVertical*45,
-                        // width: SizeConfig.blockSizeHorizontal*180,
-                        width: SizeConfig.blockSizeHorizontal*180,
-                        margin: const EdgeInsets.only(left: 10,right: 10, top: 0),
-                        child: InAppWebView(
-                          initialOptions: InAppWebViewGroupOptions(
-                            crossPlatform: InAppWebViewOptions(
-                              supportZoom: false,
-                            ),
+                                ]),
                           ),
 
-                          onWebViewCreated: (InAppWebViewController controller) {
-                            var uri = "assets/index.html";
-                            controller.loadFile(assetFilePath: uri);
+                          Container(
+                              decoration: const BoxDecoration(
+                                  image: DecorationImage(
+                                      image: AssetImage("images/background.png"),
+                                      fit: BoxFit.cover)),
 
-                          },
+                              height: SizeConfig.blockSizeVertical*30,
+                              // width: SizeConfig.blockSizeHorizontal*180,
+                              width: SizeConfig.blockSizeHorizontal*180,
+                              margin: const EdgeInsets.only(left: 10,right: 10, top: 0),
+                              child: WebView(
 
+                                initialUrl: 'about:blank',
+                                javascriptMode: JavascriptMode.unrestricted,
+                                onWebViewCreated: (WebViewController webViewController) async {
+                                  _webViewController = webViewController;
+                                  String fileContent = await rootBundle.loadString('assets/index.html');
+                                  _webViewController?.loadUrl(Uri.dataFromString(fileContent, mimeType: 'text/html', encoding: Encoding.getByName('utf-8')).toString());
+                                },
+                                zoomEnabled: false,
+                                javascriptChannels: <JavascriptChannel>{
+                                  JavascriptChannel(
+                                    name: 'messageHandler',
+                                    onMessageReceived: (JavascriptMessage message) {
+
+                                      setState(() {
+                                        valueData = message.message;
+                                        debugPrint("setState");
+                                      });
+
+                                    },
+                                  )
+                                },
+
+                              )
+
+                          ),
+
+                        ],
+                      )
+
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(top: 20,bottom: 10, left: 20, right: 20),
+                    width: double.infinity,
+                    height: 50.0,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          //  32 backgroundColor: const Color(0xFF063464),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6.0),
+                                side: const BorderSide(color: Color(0xFF063464))),
+                            elevation: 6.0
                         ),
+                        onPressed: () async {
 
-                      ),
-
-                    ],
-                  )) //.horizontal//apply padding to all four sides
-
-          ),),
-
-          Container(
-            margin: const EdgeInsets.only(top: 20,bottom: 10, left: 20, right: 20),
-            width: double.infinity,
-            height: 50.0,
-            child: ElevatedButton(
-
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF063464),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6.0),
-                        side: const BorderSide(color: Color(0xFF063464))),
-                    elevation: 6.0
-                ),
-                onPressed: () {},
-                child: const Text(
-                  "Submit",
-                  style: TextStyle(
-                      fontFamily: "Montserrat", fontSize: 18.0, color: Colors.white),
-                )
-            ),
-          ),
+                          debugPrint("Data:::===> $valueData");
 
 
-        ],
+                          Map<String, String> details = {};
+                          details["question_id"] = widget.questionsList[index]['id'].toString();
+                          details["answer"] = valueData;
+
+                          detailsArray.add(details);
+
+                          if (_controller!.page?.toInt() == widget.questionsList.length - 1) {
+
+                            // showLoaderDialog(context);
+                             submitGameAnswer(context);
+
+                          } else {
+                            /* if(valueData == "00000000"){
+                               Fluttertoast.showToast(
+                                 msg: "Please select some value in abacus",
+                                 toastLength: Toast.LENGTH_SHORT,
+                                 gravity: ToastGravity.CENTER,
+                               );
+                             }else{
+
+                             }*/
+                            _controller!.nextPage(
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeInExpo);
+                            setState(() {
+                              btnPressed = false;
+                            });
+
+                          }
+
+                          valueData = "";
+
+                        },
+                        child: Text(
+                          btnText,
+                          style: TextStyle(
+                              fontFamily: "Montserrat", fontSize: 18.0, color: Colors.white),
+                        )
+                    ),
+                  ),
+
+
+                  /* Container(
+                  margin: EdgeInsets.only(top: 5),
+                  child: Text(
+                    "${widget.questionsList[index]['Marks']} marks for the question.",
+                    textAlign: TextAlign.start,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                ),*/
+
+                ],
+              );
+            },
+            itemCount: widget.questionsList.length,
+          )
       ),
+
+
     );
   }
 
-  /*  showContent() {
-    return SafeArea(
-      child: Container(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
 
-          Container(
-            padding: EdgeInsets.only(top: 20, left: 10, right: 10),
-            child: Row(
-              children: [
-                Expanded(
-                    flex: 7,
-                    child: Text("Let’s input number to abacus",
-                        textAlign: TextAlign.start,
-                        style: TextStyle(
-                            decoration: TextDecoration.none,
-                            fontSize: 16.0,
-                            color: Colors.white,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.w600)
-                    )
-                ),
-
-                Expanded(
-                    flex: 3,
-                    child: Text("1/10",
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                            decoration: TextDecoration.none,
-                            fontSize: 16.0,
-                            color: Colors.white,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.w600)
-                    )
-                )
-              ],
-            ),
-          ),
-
-          Container(
-              margin: EdgeInsets.only(top: 40),
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
-                  image: DecorationImage(
-                      image: new AssetImage("images/background.png"),
-                      fit: BoxFit.cover)),
-
-              child: Expanded(
-                flex: 1,
-                  child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Color(0XFF3CA82E),
-                            borderRadius: BorderRadius.all(Radius.circular(20)),
-                          ),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-
-                                Container(
-                                  margin: const EdgeInsets.only(top: 5, left: 5, right: 5),
-                                  child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Expanded(
-                                            flex: 3,
-                                            child: Container(
-                                              margin: EdgeInsets.only(left: 10, right: 10),
-                                              child: Text(
-                                                "Lesson 3",
-                                                style: TextStyle(
-                                                    decoration: TextDecoration.none,
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontFamily: "Montserrat",
-                                                    color: Colors.white),
-                                              ),
-                                              alignment: Alignment.center,
-                                            )
-                                        ),
-
-                                        Expanded(
-                                            flex: 7,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Color(0XFFEFF9DF),
-                                                borderRadius: new BorderRadius.only(
-                                                  topRight: const Radius.circular(20.0),
-                                                ),
-                                              ),
-                                              alignment: Alignment.centerLeft,
-                                              padding: EdgeInsets.all(10),
-                                              child: Text(
-                                                "When the multiplicand is one digit.",
-                                                style: TextStyle(
-                                                    decoration: TextDecoration.none,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontFamily: "Montserrat",
-                                                    color: Colors.black),
-                                              ),
-                                            )
-                                        )
-                                      ]),
-                                ),
-
-                                Container(
-                                  margin: EdgeInsets.only(left: 5, right: 5),
-                                  padding: EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Color(0XFFEFF9DF),
-                                    border: Border(
-                                      bottom:
-                                      BorderSide(color: Colors.green, width: 1),
-                                      top: BorderSide(color: Colors.green, width: 1),
-                                    ),
-                                  ),
-                                  child: Row(
-
-                                      children: [
-                                        Expanded(
-                                            flex: 7,
-                                            child: Text(
-                                              "Calculate the following multiplication.",
-                                              style: TextStyle(
-                                                  decoration: TextDecoration.none,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontFamily: "Montserrat",
-                                                  color: Colors.black),
-                                            )
-                                        ),
-
-                                        Expanded(flex: 3,
-                                            child: Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                      color: Colors.black,
-                                                      width: 1
-                                                  ),
-                                                  borderRadius: BorderRadius.circular(5),
-                                                ),
-                                                padding: const EdgeInsets.all(5),
-                                                child: Row(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(right: 5),
-                                                        child: Image.asset(
-                                                          'images/answer_icon.png',
-                                                          width: 18,
-                                                          height: 18,
-                                                          fit: BoxFit.fill,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "Answer",
-                                                        style: TextStyle(
-                                                            decoration:
-                                                            TextDecoration.none,
-                                                            fontSize: 14,
-                                                            fontWeight: FontWeight.w600,
-                                                            fontFamily: "Montserrat",
-                                                            color: Colors.black),
-                                                      ),
-                                                    ]
-                                                )
-                                            )
-                                        )
-
-                                      ]),
-                                ),
-
-                                Container(
-                                  margin: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Color(0XFFEFF9DF),
-                                    borderRadius: new BorderRadius.only(bottomLeft: const Radius.circular(20.0), bottomRight: const Radius.circular(20.0)),
-                                  ),
-                                  child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: <Widget>[
-                                        Container(
-                                          margin: const EdgeInsets.only(top: 10, left: 10, right: 10),
-                                          height: 90,
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            "6 x 11 = ?",
-                                            style: TextStyle(
-                                                decoration: TextDecoration.none,
-                                                fontSize: 25,
-                                                fontWeight: FontWeight.w700,
-                                                fontFamily: "Montserrat",
-                                                color: Colors.black),
-                                          ),
-                                        ),
-                                        Container(
-                                          margin: const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 20),
-                                          child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Expanded(
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                        color: Color(0xff29392A),
-                                                        borderRadius: BorderRadius.circular(5),
-                                                      ),
-                                                      height: 40,
-                                                      child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: [
-                                                            Padding(
-                                                              padding: const EdgeInsets.only(right: 10),
-                                                              child: Image.asset(
-                                                                'images/reset_icon.png',
-                                                                width: 14,
-                                                                height: 14,
-                                                                fit: BoxFit.fill,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              "Reset Abacus",
-                                                              style: TextStyle(
-                                                                  decoration:
-                                                                  TextDecoration.none,
-                                                                  fontSize: 14,
-                                                                  fontWeight:
-                                                                  FontWeight.w600,
-                                                                  fontFamily:
-                                                                  "Montserrat",
-                                                                  color: Colors.white),
-                                                            ),
-                                                          ]),
-                                                    )
-                                                ),
-
-                                                SizedBox(width: 30),
-
-                                                Expanded(
-                                                    child: GestureDetector(
-                                                        onTap: (){
-                                                          showHintsAlert();
-                                                        },
-                                                        child: Container(
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.white,
-                                                            border: Border.all(
-                                                                color: Color(0XFF29392A),
-                                                                width:
-                                                                1 // red as border color
-                                                            ),
-                                                            borderRadius: BorderRadius.circular(5),
-                                                          ),
-                                                          alignment: Alignment.center,
-                                                          height: 40,
-                                                          child: Row(
-                                                              mainAxisAlignment: MainAxisAlignment.center,
-                                                              children: [
-                                                                Padding(padding: const EdgeInsets.only(right: 10),
-                                                                  child: Image.asset(
-                                                                    'images/hint_icon.png',
-                                                                    width: 14,
-                                                                    height: 20,
-                                                                    fit: BoxFit.fill,
-                                                                  ),
-                                                                ),
-                                                                Text(
-                                                                  "Hints",
-                                                                  style: TextStyle(
-                                                                      decoration:
-                                                                      TextDecoration.none,
-                                                                      fontSize: 14,
-                                                                      fontWeight:
-                                                                      FontWeight.w600,
-                                                                      fontFamily:
-                                                                      "Montserrat",
-                                                                      color: Color(0xff29392A)),
-                                                                ),
-                                                              ]
-                                                          ),
-                                                        )
-                                                    )
-                                                )
-
-                                              ]),
-                                        ),
-                                      ]),
-                                ),
-                              ]),
-                        ),
-
-                        // showAbacus()
-
-                      ],
-                    )
-                  )
-              )
-
-          )
-        ],
-      )),
-    );
-  }*/
 
   showHintsAlert() {
     showDialog(
@@ -810,4 +484,79 @@ class _PlayScreen extends State<PlayScreen> {
           );
         });
   }
+
+  /*  Submit Test   */
+  void submitGameAnswer(BuildContext mContext) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    debugPrint(json.encode(detailsArray));
+
+    try{
+      Response response = await post(
+          Uri.parse(ApiConstants.baseUrl + ApiConstants.submitStudentGameEndpoint),
+          headers: {
+            'Authorization': 'Bearer ${prefs.getString(ApiConstants.accessTokenSP)}',
+          },
+          body: {
+            'student_id' : prefs.getString(ApiConstants.studentID),
+            'student_type' : prefs.getString(ApiConstants.studentLoginType),
+            'game_id' : widget.gameId,
+            'answers' : json.encode(detailsArray),
+            'level' : widget.levelId,
+          }
+      );
+
+      // Navigator.pop(mContext);
+      Map<String, dynamic> dataObj = json.decode(response.body);
+      debugPrint("Data Obj : $dataObj");
+
+      if(dataObj['status'] == "true"){
+
+        Navigator.push(
+            mContext,
+            MaterialPageRoute(
+                builder: (mContext) =>  ScoreScreen(level:widget.levelId.toString(), total_marks : dataObj['total_marks'].toString(), student_marks : dataObj['student_marks'].toString(), correct_answers : dataObj['correct_answers'].toString(),
+                    wrong_answers : dataObj['wrong_answers'].toString(),total_questions : dataObj['total_questions'].toString(), percentage : dataObj['percentage'].toString(), missed_questions: dataObj['missing_answers'].toString(),
+                    questionList: dataObj['answer_correct_list'])
+            )
+        );
+
+        Fluttertoast.showToast(
+          msg: dataObj['message'],
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+
+      }
+      else {
+
+        Fluttertoast.showToast(
+          msg: dataObj['message'],
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+
+      }
+
+    }catch(e){
+      // Navigator.pop(mContext);
+      print("Error : $e");
+    }
+  }
+
+
+  onEnd() {
+    print('onEnd');
+    submitGameAnswer(context);
+
+  }
+
+}
+
+
+class AnswerModel {
+  String questionId;
+  String answer;
+
+  AnswerModel(this.questionId ,this.answer);
 }

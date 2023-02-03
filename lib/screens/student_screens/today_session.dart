@@ -1,6 +1,12 @@
+import 'dart:io';
+
+
 import 'package:abacus_app/screens/student_screens/live_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+
+
 
 class TodaySession extends StatefulWidget {
   static const String routeName = '/TodaySession';
@@ -9,6 +15,15 @@ class TodaySession extends StatefulWidget {
 }
 
 class _TodaySession extends State<TodaySession> {
+  bool? isAudioOnly = true;
+  bool? isAudioMuted = true;
+  bool? isVideoMuted = true;
+  final iosAppBarRGBAColor = TextEditingController(text: "#0080FF80");
+  final serverText = "";
+  final roomText = "plugintestroom";
+  final subjectText = "My Plugin Test Meeting";
+  final nameText = "Plugin Test User";
+  final emailText = "fake@email.com";
 
   @override
   void initState() {
@@ -26,8 +41,6 @@ class _TodaySession extends State<TodaySession> {
           //color set to transperent or set your own color
         )
     );
-
-    super.dispose();
   }
 
 
@@ -76,7 +89,7 @@ class _TodaySession extends State<TodaySession> {
             }
             ),
           ],
-          titleTextStyle: TextStyle(decoration: TextDecoration.none, fontSize: 18.0, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: "Montserrat"),
+          titleTextStyle: const TextStyle(decoration: TextDecoration.none, fontSize: 18.0, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: "Montserrat"),
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -91,11 +104,11 @@ class _TodaySession extends State<TodaySession> {
     return SizedBox(
       width: double.infinity,
       child: Container(
-        margin: EdgeInsets.all(0),
+        margin: const EdgeInsets.all(0),
         child: Stack(
             children: [
-              Image(
-                  image: new AssetImage("images/home_bg.png"),
+              const Image(
+                  image: AssetImage("images/home_bg.png"),
                   fit: BoxFit.fill),
 
               showContent(),
@@ -117,124 +130,133 @@ class _TodaySession extends State<TodaySession> {
               Expanded(
                 child: ListView.builder(
                   itemCount: 2,
-                  itemBuilder: (context, position) {
-                    return Container(
-                      margin: EdgeInsets.only(top: 20.0, left: 10.0, right: 10.0),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          image: DecorationImage(
-                              image: new AssetImage("images/bg_orange.png"),
-                              fit: BoxFit.cover)
+                  itemBuilder: (context, position)
+    {
+      return GestureDetector(
+          child: Container(
+            margin: const EdgeInsets.only(top: 20.0, left: 10.0, right: 10.0),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                image: const DecorationImage(
+                    image: AssetImage("images/bg_orange.png"),
+                    fit: BoxFit.cover)
+            ),
+
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 6,
+                  child: Column(
+
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      Container(
+                          alignment: Alignment.topLeft,
+                          margin: const EdgeInsets.only(top: 20.0),
+                          decoration: const BoxDecoration(
+                              color: Colors.transparent,
+                              image: DecorationImage(
+                                  alignment: Alignment.topLeft,
+                                  image: AssetImage(
+                                      "images/yellow_banner.png"),
+                                  fit: BoxFit.fitHeight
+                              )
+                          ),
+
+                          padding: const EdgeInsets.only(
+                              top: 10, left: 10, right: 20, bottom: 10),
+
+                          child: const Text("Tutor Name",
+                            style: TextStyle(
+                                decoration: TextDecoration.none,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: "Montserrat",
+                                color: Colors.black),
+                          )
                       ),
 
-                      child: Row(
+                      Container(
+                        margin: EdgeInsets.only(
+                            left: 10, right: 10, bottom: 20, top: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              flex: 6,
-                              child: Column(
-
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-
-                                Container(
-                                    alignment: Alignment.topLeft,
-                                    margin: EdgeInsets.only(top: 20.0),
-                                    decoration: BoxDecoration(
-                                        color: Colors.transparent,
-                                        image: DecorationImage(
-                                            alignment: Alignment.topLeft,
-                                            image: new AssetImage("images/yellow_banner.png"),
-                                            fit: BoxFit.fitHeight
-                                        )
-                                    ),
-
-                                    padding: EdgeInsets.only(top: 10, left: 10, right: 20, bottom: 10),
-
-                                    child: const Text("Tutor Name",
-                                      style: TextStyle(
-                                          decoration: TextDecoration.none,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: "Montserrat",
-                                          color: Colors.black),
-                                    )
-                                ),
-
-                                Container(
-                                  margin: EdgeInsets.only(left: 10, right: 10, bottom: 20, top: 20),
-                                  child:  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        child: const Text("Wednesday",
-                                          style: TextStyle(
-                                              decoration: TextDecoration.none,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                              fontFamily: "Montserrat",
-                                              color: Colors.white),
-                                        ),
-                                      ),
-
-                                      Container(
-                                        child: const Text("Course Name",
-                                          style: TextStyle(
-                                              decoration: TextDecoration.none,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                              fontFamily: "Montserrat",
-                                              color: Colors.white),
-                                        ),
-                                      ),
-
-                                      Container(
-                                        margin: EdgeInsets.only(top: 10),
-                                        child: const Text("session title",
-                                          style: TextStyle(
-                                              decoration: TextDecoration.none,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              fontFamily: "Montserrat",
-                                              color: Colors.white),
-                                        ),
-                                      ),
-
-                                      Container(
-                                        margin: EdgeInsets.only(top: 0),
-                                        child: const Text("session timing",
-                                          style: TextStyle(
-                                              decoration: TextDecoration.none,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              fontFamily: "Montserrat",
-                                              color: Colors.white),
-                                        ),
-                                      ),
-
-                                    ],
-                                  ),
-
-
-                                ),
-
-                              ],
-                            ),
+                            Container(
+                              child: const Text("Wednesday",
+                                style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: "Montserrat",
+                                    color: Colors.white),
+                              ),
                             ),
 
-                            Expanded(
-                                flex: 4,
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  child: const Image(
-                                    image: AssetImage("images/session_image.png"),
-                                    height: 120,
-                                  ),
-                                )
-                            )
+                            Container(
+                              child: const Text("Course Name",
+                                style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: "Montserrat",
+                                    color: Colors.white),
+                              ),
+                            ),
+
+                            Container(
+                              margin: EdgeInsets.only(top: 10),
+                              child: const Text("session title",
+                                style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "Montserrat",
+                                    color: Colors.white),
+                              ),
+                            ),
+
+                            Container(
+                              margin: EdgeInsets.only(top: 0),
+                              child: const Text("session timing",
+                                style: TextStyle(
+                                    decoration: TextDecoration.none,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "Montserrat",
+                                    color: Colors.white),
+                              ),
+                            ),
+
                           ],
                         ),
 
-                    );
+
+                      ),
+
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                    flex: 4,
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: const Image(
+                        image: AssetImage("images/session_image.png"),
+                        height: 120,
+                      ),
+                    )
+                )
+              ],
+            ),
+
+
+          ),
+
+      );
+
 
                   },
                 ),
@@ -249,6 +271,8 @@ class _TodaySession extends State<TodaySession> {
   }
 
 }
+
+
 
 
 

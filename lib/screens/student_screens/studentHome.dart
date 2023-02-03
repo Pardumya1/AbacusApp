@@ -1,3 +1,4 @@
+import 'package:abacus_app/screens/jisti/meeting_screen.dart';
 import 'package:abacus_app/screens/student_screens/StudentAttendanceScreen.dart';
 import 'package:abacus_app/screens/student_screens/studentOnlineClasses.dart';
 import 'package:abacus_app/screens/student_screens/selected_level.dart';
@@ -7,7 +8,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../marge_screens/about_us.dart';
 import 'package:abacus_app/screens/student_screens/MyLevel.dart';
 import 'package:abacus_app/screens/student_screens/studentProfile.dart';
-import 'package:abacus_app/screens/student_screens/today_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -78,6 +78,9 @@ class _StudentHome extends State<StudentHome> with WidgetsBindingObserver {
           statusBarIconBrightness: Brightness.dark,
           statusBarBrightness: Brightness.dark));
       // user returned to our app
+
+      debugPrint("Hello Resumed");
+
     }
     else if (state == AppLifecycleState.inactive) {
       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -85,6 +88,8 @@ class _StudentHome extends State<StudentHome> with WidgetsBindingObserver {
           statusBarIconBrightness: Brightness.dark,
           statusBarBrightness: Brightness.dark));
       // app is inactive
+
+      debugPrint("Hello Inactive");
     }
     else if (state == AppLifecycleState.paused) {
       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -92,6 +97,8 @@ class _StudentHome extends State<StudentHome> with WidgetsBindingObserver {
           statusBarIconBrightness: Brightness.dark,
           statusBarBrightness: Brightness.dark));
       // user is about quit our app temporally
+
+      debugPrint("Hello Pause");
     }
 
   }
@@ -266,7 +273,9 @@ class _StudentHome extends State<StudentHome> with WidgetsBindingObserver {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TodaySession(),
+                            // builder: (context) => TodaySession(),
+                            builder: (context) => MeetingScreen(),
+                            // builder: (context) => HostMeetingCard(),
                           ),
                         );
                       }
@@ -993,7 +1002,7 @@ class _StudentHome extends State<StudentHome> with WidgetsBindingObserver {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ContactUsScreen(),
+            builder: (context) => const ContactUsScreen(),
           ),
         );
         break;
